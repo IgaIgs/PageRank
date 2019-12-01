@@ -1,8 +1,11 @@
 import os
 import time
+from collections import defaultdict
 from progress import Progress
 
 WEB_DATA = os.path.join(os.path.dirname(__file__), 'school_web.txt')
+
+#web_text = 'C:/Users/Kirai/PycharmProjects/practical-5/school_web.txt'
 
 
 def load_graph(fd):
@@ -22,11 +25,27 @@ def load_graph(fd):
     Each line in the file contains two white space seperated URLs and
     denotes a directed edge (link) from the first URL to the second.
     """
+    # create an empty list for pairs of (node, target) which will depict the connection of URLs
+    connections = []
+    edges = []
     # Iterate through the file line by line
     for line in fd:
         # And split each line into two URLs
         node, target = line.split()
-        raise RuntimeError("This function is not implemented yet.")
+        # take a pair of node and target from the same line and append to the list of connection pairs
+        connections.append([node, target])
+
+    # create an empty temporary dictionary using collections' defaultdict which will store values in lists
+    temp_d = defaultdict(list)
+    # iterate through connections, integrate repeating nodes into single keys
+    # and store all their targets as a list of values
+    for k, v in connections:
+        temp_d[k].append(v)
+    # turn the temporary dictionary into a final dictionary with values stored in lists
+    graph_rep_list = dict((k, list(v)) for k, v in temp_d.items())
+
+    print(graph_rep_list)
+    return graph_rep_list
 
 
 def print_stats(graph):
