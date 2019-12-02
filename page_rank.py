@@ -46,9 +46,17 @@ def load_graph(fd):
     return graph_rep_list
 
 
-def print_stats(graph):
+def print_stats(graph_rep_list):
     """Print number of nodes and edges in the given graph"""
-    raise RuntimeError("This function is not implemented yet.")
+    # calculate the number of keys in the dictionary which is the number of distinctive nodes in the graph
+    nodes = len(graph_rep_list.keys())
+    print(f'There are {nodes} nodes in the graph.')
+
+    # calculate the total number of values in the dictionary which represents the number of edges in the the graph
+    edges = 0
+    for key, value in graph_rep_list.items():
+        edges += len(list(value))
+    print(f'There are {edges} edges in the graph.')
 
 
 def stochastic_page_rank(graph, n_iter=1_000_000, n_steps=100):
