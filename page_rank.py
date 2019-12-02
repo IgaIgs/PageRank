@@ -5,8 +5,6 @@ from progress import Progress
 
 WEB_DATA = os.path.join(os.path.dirname(__file__), 'school_web.txt')
 
-#web_text = 'C:/Users/Kirai/PycharmProjects/practical-5/school_web.txt'
-
 
 def load_graph(fd):
     """Load graph from text file
@@ -49,8 +47,8 @@ def load_graph(fd):
 
 
 def print_stats(graph):
-        """Print number of nodes and edges in the given graph"""
-        raise RuntimeError("This function is not implemented yet.")
+    """Print number of nodes and edges in the given graph"""
+    raise RuntimeError("This function is not implemented yet.")
 
 
 def stochastic_page_rank(graph, n_iter=1_000_000, n_steps=100):
