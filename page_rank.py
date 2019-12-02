@@ -2,6 +2,7 @@ import os
 import time
 from collections import defaultdict
 from progress import Progress
+import random
 
 WEB_DATA = os.path.join(os.path.dirname(__file__), 'school_web.txt')
 
@@ -59,7 +60,7 @@ def print_stats(graph_rep_list):
     print(f'There are {edges} edges in the graph.')
 
 
-def stochastic_page_rank(graph, n_iter=1_000_000, n_steps=100):
+def stochastic_page_rank(graph_rep_list, n_iter=1_000_000, n_steps=100):
     """Stochastic PageRank estimation
 
     Parameters:
@@ -68,13 +69,31 @@ def stochastic_page_rank(graph, n_iter=1_000_000, n_steps=100):
     n_steps (int) -- number of followed links before random walk is stopped
 
     Returns:
-    A dict that assigns each page its hit frequency
+    hit_count -- A dict that assigns each page its hit frequency
 
     This function estimates the Page Rank by counting how frequently
     a random walk that starts on a random node will after n_steps end
     on each node of the given graph.
     """
-    raise RuntimeError("This function is not implemented yet.")
+    # create a dictionary to save the pages and their hit frequencies to
+    hit_count = {}
+    # add each node from the graph to the hit_count dictionary and set their hit frequencies to 0.
+    for key in graph_rep_list.keys():
+        hit_count[key] = 0
+
+    # for each random walker, choose a random website to start from
+    for i in range(n_iter+1):
+        # by choosing a random node from the starting nodes in the graph
+        current_node = random.choice(list(graph_rep_list.keys()))
+        # for every step taken by the walker before reaching the end URL:
+        for j in range(n_steps+1):
+            # the walker randomly enters one of the URLs from the starting/current node's targets
+            current_node = random.choice(list(graph_rep_list[current_node]))
+        # up the hit count for the current node
+        hit_count[current_node] += 1/n_iter
+        # update the hit_count dictionary with this upped hit frequency
+        hit_count.update({current_node: hit_count[current_node]})
+    return hit_count
 
 
 def distribution_page_rank(graph, n_iter=100):
@@ -116,7 +135,7 @@ def main():
 
     # Show top 20 pages with their page rank and time it took to compute
     top = sorted(ranking.items(), key=lambda item: item[1], reverse=True)
-    print('\n'.join(f'{100*v:.2f}\t{k}' for k,v in top[:20]))
+    print('\n'.join(f'{100*v:.2f}\t{k}' for k, v in top[:20]))
     print(f'Calculation took {time_stochastic:.2f} seconds.\n')
 
     # Measure how long it takes to estimate PageRank through probabilities
@@ -129,12 +148,12 @@ def main():
 
     # Show top 20 pages with their page rank and time it took to compute
     top = sorted(ranking.items(), key=lambda item: item[1], reverse=True)
-    print('\n'.join(f'{100*v:.2f}\t{k}' for k,v in top[:20]))
+    print('\n'.join(f'{100*v:.2f}\t{k}' for k, v in top[:20]))
     print(f'Calculation took {time_probabilistic:.2f} seconds.\n')
 
     # Compare the compute time of the two methods
     speedup = time_stochastic/time_probabilistic
-    print(f'The probabilitic method was {speedup:.0f} times faster.')
+    print(f'The probabilistic method was {speedup:.0f} times faster.')
 
 
 if __name__ == '__main__':
