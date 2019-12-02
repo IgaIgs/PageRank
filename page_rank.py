@@ -21,7 +21,7 @@ def load_graph(fd):
     >>> graph = load_graph(open("web.txt"))
 
     the function parses the input file and returns a graph representation.
-    Each line in the file contains two white space seperated URLs and
+    Each line in the file contains two white space separated URLs and
     denotes a directed edge (link) from the first URL to the second.
     """
     # create an empty list for pairs of (node, target) which will depict the connection of URLs
@@ -43,7 +43,6 @@ def load_graph(fd):
     # turn the temporary dictionary into a final dictionary with values stored in lists
     graph_rep_list = dict((k, list(v)) for k, v in temp_d.items())
 
-    print(graph_rep_list)
     return graph_rep_list
 
 
@@ -96,7 +95,7 @@ def stochastic_page_rank(graph_rep_list, n_iter=1_000_000, n_steps=100):
     return hit_count
 
 
-def distribution_page_rank(graph, n_iter=100):
+def distribution_page_rank(graph_rep_list, n_iter=100):
     """Probabilistic PageRank estimation
 
     Parameters:
@@ -104,12 +103,34 @@ def distribution_page_rank(graph, n_iter=100):
     n_iter (int) -- number of probability distribution updates
 
     Returns:
-    A dict that assigns each page its probability to be reached
+    node_prob -- A dict that assigns each page its probability to be reached
 
     This function estimates the Page Rank by iteratively calculating
     the probability that a random walker is currently on any node.
     """
-    raise RuntimeError("This function is not implemented yet.")
+    # create an empty dictionary to store the pages and their probabilities of being reached in
+    node_prob = {}
+    # set the probabilities of the walker starting on any of the nodes in the graph
+    for key in graph_rep_list.keys():
+        node_prob[key] = 1/len(graph_rep_list.keys())
+
+    # create another empty dict to temporarily store the probability of reaching the subsequent node after current one
+    next_prob = {}
+    # for each step in the walker's walk
+    for i in range(n_iter + 1):
+        # initially set the probability of reaching the subsequent node to 0 for all nodes
+        for key in graph_rep_list.keys():
+            next_prob[key] = 0
+        # for each node create the method of counting the probability of being on it
+        for key in graph_rep_list.keys():
+            p = node_prob[key] / len(graph_rep_list[key])
+            # for each target update its hit probability by adding the p (probability counter)
+            for value in graph_rep_list[key]:
+                next_prob[value] += p
+        # update the general dict with new probability values from the temporary dict
+        node_prob.update(next_prob)
+
+    return node_prob
 
 
 def main():
