@@ -14,7 +14,7 @@ def load_graph(fd):
     fd -- a file like object that contains lines of URL pairs
 
     Returns:
-    A representation of the graph.
+    graph_rep -- A representation of the graph.
 
     Called for example with
 
@@ -41,29 +41,29 @@ def load_graph(fd):
     for k, v in connections:
         temp_d[k].append(v)
     # turn the temporary dictionary into a final dictionary with values stored in lists
-    graph_rep_list = dict((k, list(v)) for k, v in temp_d.items())
+    graph_rep = dict((k, list(v)) for k, v in temp_d.items())
 
-    return graph_rep_list
+    return graph_rep
 
 
-def print_stats(graph_rep_list):
+def print_stats(graph_rep):
     """Print number of nodes and edges in the given graph"""
     # calculate the number of keys in the dictionary which is the number of distinctive nodes in the graph
-    nodes = len(graph_rep_list.keys())
+    nodes = len(graph_rep.keys())
     print(f'There are {nodes} nodes in the graph.')
 
     # calculate the total number of values in the dictionary which represents the number of edges in the the graph
     edges = 0
-    for key, value in graph_rep_list.items():
+    for key, value in graph_rep.items():
         edges += len(list(value))
     print(f'There are {edges} edges in the graph.')
 
 
-def stochastic_page_rank(graph_rep_list, n_iter=1_000_000, n_steps=100):
+def stochastic_page_rank(graph_rep, n_iter=1_000_000, n_steps=100):
     """Stochastic PageRank estimation
 
     Parameters:
-    graph -- a graph object as returned by load_graph()
+    graph_rep -- a graph object as returned by load_graph()
     n_iter (int) -- number of random walks performed
     n_steps (int) -- number of followed links before random walk is stopped
 
@@ -77,29 +77,37 @@ def stochastic_page_rank(graph_rep_list, n_iter=1_000_000, n_steps=100):
     # create a dictionary to save the pages and their hit frequencies to
     hit_count = {}
     # add each node from the graph to the hit_count dictionary and set their hit frequencies to 0.
-    for key in graph_rep_list.keys():
+    for key in graph_rep.keys():
         hit_count[key] = 0
+
+    # create an instance of the Progress class from progress.py to display the progress bar for this function
+    prog = Progress(100, "Performing some long running task")
 
     # for each random walker, choose a random website to start from
     for i in range(n_iter+1):
         # by choosing a random node from the starting nodes in the graph
-        current_node = random.choice(list(graph_rep_list.keys()))
+        current_node = random.choice(list(graph_rep.keys()))
+        # show a progress bar to track progress of the ongoing calculation
+        prog.counter += 0.000325
+        prog.show()
         # for every step taken by the walker before reaching the end URL:
         for j in range(n_steps+1):
             # the walker randomly enters one of the URLs from the starting/current node's targets
-            current_node = random.choice(list(graph_rep_list[current_node]))
+            current_node = random.choice(list(graph_rep[current_node]))
         # up the hit count for the current node
         hit_count[current_node] += 1/n_iter
         # update the hit_count dictionary with this upped hit frequency
         hit_count.update({current_node: hit_count[current_node]})
+    # hide the progress bar
+    prog.finish()
     return hit_count
 
 
-def distribution_page_rank(graph_rep_list, n_iter=100):
+def distribution_page_rank(graph_rep, n_iter=100):
     """Probabilistic PageRank estimation
 
     Parameters:
-    graph -- a graph object as returned by load_graph()
+    graph_rep -- a graph object as returned by load_graph()
     n_iter (int) -- number of probability distribution updates
 
     Returns:
@@ -111,25 +119,24 @@ def distribution_page_rank(graph_rep_list, n_iter=100):
     # create an empty dictionary to store the pages and their probabilities of being reached in
     node_prob = {}
     # set the probabilities of the walker starting on any of the nodes in the graph
-    for key in graph_rep_list.keys():
-        node_prob[key] = 1/len(graph_rep_list.keys())
+    for key in graph_rep.keys():
+        node_prob[key] = 1/len(graph_rep.keys())
 
     # create another empty dict to temporarily store the probability of reaching the subsequent node after current one
     next_prob = {}
     # for each step in the walker's walk
     for i in range(n_iter + 1):
         # initially set the probability of reaching the subsequent node to 0 for all nodes
-        for key in graph_rep_list.keys():
+        for key in graph_rep.keys():
             next_prob[key] = 0
         # for each node create the method of counting the probability of being on it
-        for key in graph_rep_list.keys():
-            p = node_prob[key] / len(graph_rep_list[key])
+        for key in graph_rep.keys():
+            p = node_prob[key] / len(graph_rep[key])
             # for each target update its hit probability by adding the p (probability counter)
-            for value in graph_rep_list[key]:
+            for value in graph_rep[key]:
                 next_prob[value] += p
         # update the general dict with new probability values from the temporary dict
         node_prob.update(next_prob)
-
     return node_prob
 
 
